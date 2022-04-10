@@ -22,8 +22,8 @@ def pregunta_01():
     40
 
     """
-    return
-
+    numFilas = len(tbl0)
+    return numFilas
 
 def pregunta_02():
     """
@@ -33,8 +33,10 @@ def pregunta_02():
     4
 
     """
-    return
+    numCol = tbl0.columns
+    x = len(numCol)
 
+    return x
 
 def pregunta_03():
     """
@@ -50,8 +52,9 @@ def pregunta_03():
     Name: _c1, dtype: int64
 
     """
-    return
+    x = tbl0["_c1"].value_counts().sort_index() 
 
+    return x
 
 def pregunta_04():
     """
@@ -65,8 +68,9 @@ def pregunta_04():
     E    4.785714
     Name: _c2, dtype: float64
     """
-    return
+    x=tbl0.groupby("_c1")["_c2"].mean()
 
+    return x
 
 def pregunta_05():
     """
@@ -82,8 +86,8 @@ def pregunta_05():
     E    9
     Name: _c2, dtype: int64
     """
-    return
-
+    x = tbl0.groupby("_c1")["_c2"].max()
+    return x
 
 def pregunta_06():
     """
@@ -94,7 +98,9 @@ def pregunta_06():
     ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
     """
-    return
+    x = tbl1["_c4"].sort_values().unique()
+    y = list(map(lambda x: x.upper(), x))
+    return y
 
 
 def pregunta_07():
@@ -110,7 +116,8 @@ def pregunta_07():
     E    67
     Name: _c2, dtype: int64
     """
-    return
+    x = tbl0.groupby("_c1")["_c2"].sum()
+    return x
 
 
 def pregunta_08():
@@ -128,7 +135,8 @@ def pregunta_08():
     39   39   E    5  1998-01-26    44
 
     """
-    return
+    tbl0["suma"] = tbl0["_c0"] + tbl0["_c2"]
+    return tbl0
 
 
 def pregunta_09():
@@ -146,8 +154,8 @@ def pregunta_09():
     39   39   E    5  1998-01-26  1998
 
     """
-    return
-
+    tbl0["year"] = tbl0["_c3"].map(lambda x: x.split("-")[0])
+    return tbl0
 
 def pregunta_10():
     """
@@ -163,7 +171,68 @@ def pregunta_10():
     3   D                  1:2:3:5:5:7
     4   E  1:1:2:3:3:4:5:5:5:6:7:8:8:9
     """
-    return
+#Forma número 1
+    #convierto a cadena 
+    #tbl0["x"] = tbl0["_c2"].apply(str)
+    # def listaUnida(df):
+    #     lis = list(df["x"])
+    #     lis.sort()
+    #     lis = ":".join(lis)
+    #     return lis
+
+    # x = tbl0.groupby("_c1").apply(listaUnida)
+    # x = pd.DataFrame(x)
+    # #x = x.rename_axis("_c1")
+    # x = x.rename(columns={0: "_c2"})
+    # x = pd.DataFrame(x)
+
+# Forma número 2
+    #convierto a cadena 
+    tbl0["x"] = tbl0["_c2"].apply(str)
+    #sumo la cadena de los números de tal forma que se peguen los números
+    x = tbl0.groupby("_c1")["x"].sum() # mas cerca
+    #hago un for para dividir eso números con una lista, luego los ordeno y los uno con :.
+    s = []
+    for y in x:
+        y = list(y)
+        y.sort()
+        y = ":".join(y)
+        s.append(y)
+
+    #creo la lista de las letras ordenada, se que va a asociarse bien con la columna c2 porque 
+    #cuando se aplico el groupby y el sum, quedo ordenado por lo que resta unirlas
+    letras = tbl0["_c1"].sort_values().unique()
+    #uno las letras ordenadas y la columna ordenada y unida con el join, que se hizo en el for
+    #renombro las columnas y luego le digo que el indice es la columna _c1
+    x = pd.DataFrame(zip(letras, s))
+    x = x.rename(columns={1: "_c2", 0:"_c1"})
+    x = x.set_index("_c1")
+
+    return x
+
+# Forma número tres, en lugar de de hacer el sum en el groupby creo directamente el diccionario, 
+# esto ayuda a que en el for no se tenga que dividir sino que se haga la unión de una vez.
+# además se ordenan de una vez los valores del diccionario y se trabaja con las claves.
+
+# tbl0["x"] = tbl0["_c2"].apply(str)
+# dicc = (tbl0.sort_values(["x"], ascending=True).groupby("_c1")["x"].apply(list).to_dict())
+# print(dicc)
+
+# listaNumeros = list(dicc.keys())
+# x = list(dicc.values())
+
+# s = []
+# for y in x:
+#     y = ":".join(y)
+#     s.append(y)
+
+# print(s)
+
+# x = pd.DataFrame(zip(listaNumeros, s))
+# x = x.rename(columns={1: "_c2", 0:"_c1"})
+# x = x.set_index("_c1")
+
+# print(x)
 
 
 def pregunta_11():
@@ -182,8 +251,23 @@ def pregunta_11():
     38   38      d,e
     39   39    a,d,f
     """
-    return
+    dicc = (tbl1.sort_values(["_c4"], ascending=True).groupby("_c0")["_c4"].apply(list).to_dict())
 
+    listaNumeros = list(dicc.keys())
+    x = list(dicc.values())
+
+    s = []
+    for y in x:
+        y = ",".join(y)
+        s.append(y)
+
+    num = tbl1["_c0"].sort_values()
+
+    x = pd.DataFrame(zip(listaNumeros, s))
+    x = x.rename(columns={1: "_c4", 0:"_c0"})
+    #x = x.set_index("_c1")
+
+    return x
 
 def pregunta_12():
     """
@@ -200,8 +284,27 @@ def pregunta_12():
     38   38                    eee:0,fff:9,iii:2
     39   39                    ggg:3,hhh:8,jjj:5
     """
-    return
+    #uno las dos columnas con : y aplico cadena para que deje hacerlo
+    tbl2["uniCol"] = tbl2["_c5a"] + ":" + tbl2["_c5b"].apply(str)
+    #creo un diccionario
+    dicc = (tbl2.sort_values(["uniCol"], ascending=True).groupby("_c0")["uniCol"].apply(list).to_dict())
 
+    #Saco las claves y valores
+    listaNumeros = list(dicc.keys())
+    x = list(dicc.values())
+
+    #hago un for para quitar las listas de cada valor de tal forma que queden unidos en una sola lista
+    # entonces itero en esas sublistas, y las uno mediante coma y las agrego a una lista para que queden en una sola lista.
+    s = []
+    for y in x:
+        y = ",".join(y)
+        s.append(y)
+
+    #creo un dataframe con las dos lista, de claves que estan en una sola lista y de los valores que se aco de convertir
+    x = pd.DataFrame(zip(listaNumeros, s))
+    x = x.rename(columns={1: "_c5", 0:"_c0"})
+   
+    return x
 
 def pregunta_13():
     """
@@ -217,4 +320,22 @@ def pregunta_13():
     E    275
     Name: _c5b, dtype: int64
     """
-    return
+    union = tbl0.set_index("_c0", inplace=True)
+    union = tbl2.set_index("_c0", inplace=True)
+
+    union = pd.concat(objs=[tbl0, tbl2,], axis=1)
+
+    x = union.groupby("_c1")["_c5b"].sum()
+
+    return x
+
+# union = tbl0.set_index("_c0", inplace=True)
+# union = tbl2.set_index("_c0", inplace=True)
+
+# union = pd.concat(objs=[tbl0, tbl2,], axis=1)
+
+# x = union.groupby("_c1")["_c5b"].sum()
+# print(x)
+
+
+
